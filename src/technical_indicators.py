@@ -4,7 +4,6 @@ Calculates technical indicators using TA-Lib and pandas_ta
 """
 
 import pandas as pd
-import numpy as np
 
 try:
     import talib
@@ -24,12 +23,12 @@ except ImportError:
 def calculate_sma(df, period=50, column='Close'):
     """
     Calculate Simple Moving Average.
-    
+
     Args:
         df: DataFrame with price data
         period: Period for moving average
         column: Column name to calculate MA on
-    
+
     Returns:
         Series with SMA values
     """
@@ -44,12 +43,12 @@ def calculate_sma(df, period=50, column='Close'):
 def calculate_ema(df, period=12, column='Close'):
     """
     Calculate Exponential Moving Average.
-    
+
     Args:
         df: DataFrame with price data
         period: Period for EMA
         column: Column name to calculate EMA on
-    
+
     Returns:
         Series with EMA values
     """
@@ -64,12 +63,12 @@ def calculate_ema(df, period=12, column='Close'):
 def calculate_rsi(df, period=14, column='Close'):
     """
     Calculate Relative Strength Index (RSI).
-    
+
     Args:
         df: DataFrame with price data
         period: Period for RSI calculation
         column: Column name to calculate RSI on
-    
+
     Returns:
         Series with RSI values (0-100)
     """
@@ -90,14 +89,14 @@ def calculate_rsi(df, period=14, column='Close'):
 def calculate_macd(df, fastperiod=12, slowperiod=26, signalperiod=9, column='Close'):
     """
     Calculate MACD (Moving Average Convergence Divergence).
-    
+
     Args:
         df: DataFrame with price data
         fastperiod: Fast EMA period
         slowperiod: Slow EMA period
         signalperiod: Signal line period
         column: Column name to calculate MACD on
-    
+
     Returns:
         DataFrame with MACD, MACD_signal, and MACD_hist columns
     """
@@ -114,7 +113,8 @@ def calculate_macd(df, fastperiod=12, slowperiod=26, signalperiod=9, column='Clo
             'MACD_hist': hist
         }, index=df.index)
     elif PANDAS_TA_AVAILABLE:
-        macd_df = ta.macd(df[column], fast=fastperiod, slow=slowperiod, signal=signalperiod)
+        macd_df = ta.macd(df[column], fast=fastperiod,
+                          slow=slowperiod, signal=signalperiod)
         return macd_df
     else:
         # Manual MACD calculation
@@ -133,13 +133,13 @@ def calculate_macd(df, fastperiod=12, slowperiod=26, signalperiod=9, column='Clo
 def calculate_bollinger_bands(df, period=20, std_dev=2, column='Close'):
     """
     Calculate Bollinger Bands.
-    
+
     Args:
         df: DataFrame with price data
         period: Period for moving average
         std_dev: Number of standard deviations
         column: Column name to calculate bands on
-    
+
     Returns:
         DataFrame with upper, middle, and lower bands
     """
@@ -171,45 +171,46 @@ def calculate_bollinger_bands(df, period=20, std_dev=2, column='Close'):
         }, index=df.index)
 
 
-def add_technical_indicators(df, indicators=['SMA_50', 'RSI', 'MACD']):
+def add_technical_indicators(df, indicators=None):
     """
     Add multiple technical indicators to a DataFrame.
-    
+
     Args:
         df: DataFrame with price data (must have Open, High, Low, Close, Volume)
         indicators: List of indicators to calculate
-    
+
     Returns:
         DataFrame with added indicator columns
     """
+    if indicators is None:
+        indicators = ['SMA_50', 'RSI', 'MACD']
     df = df.copy()
-    
+
     if 'SMA_50' in indicators:
         df['SMA_50'] = calculate_sma(df, period=50)
-    
+
     if 'SMA_200' in indicators:
         df['SMA_200'] = calculate_sma(df, period=200)
-    
+
     if 'EMA_12' in indicators:
         df['EMA_12'] = calculate_ema(df, period=12)
-    
+
     if 'EMA_26' in indicators:
         df['EMA_26'] = calculate_ema(df, period=26)
-    
+
     if 'RSI' in indicators:
         df['RSI'] = calculate_rsi(df, period=14)
-    
+
     if 'MACD' in indicators:
         macd_df = calculate_macd(df)
         df['MACD'] = macd_df['MACD']
         df['MACD_signal'] = macd_df['MACD_signal']
         df['MACD_hist'] = macd_df['MACD_hist']
-    
+
     if 'BB' in indicators or 'Bollinger' in indicators:
         bb_df = calculate_bollinger_bands(df)
         df['BB_upper'] = bb_df['BB_upper']
         df['BB_middle'] = bb_df['BB_middle']
         df['BB_lower'] = bb_df['BB_lower']
-    
-    return df
 
+    return df
